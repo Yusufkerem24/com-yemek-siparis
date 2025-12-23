@@ -33,9 +33,9 @@ public class Cart {
     }
 
     public void printSummary() {
-        System.out.println("=== Sepet Özeti ===");
+        System.out.println("== Sepet Özeti ==");
         if (items.isEmpty()) {
-            System.out.println("Sepet boş.");
+            System.out.println("Sepet bos.");
             return;
         }
         for (MenuItem item : items) System.out.println("- " + item);

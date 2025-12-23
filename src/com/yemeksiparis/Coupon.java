@@ -3,6 +3,7 @@ package com.yemeksiparis;
 public class Coupon {
     private String code;
     private double discountRate; // 0.10 = %10
+    public int say;
 
     public Coupon(String code, double discountRate) {
         this.code = code;

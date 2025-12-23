@@ -31,7 +31,7 @@ public class Order implements Orderable {
     @Override
     public void placeOrder() {
         System.out.println("Sipariş oluşturuldu: " + restaurant.getName());
-        System.out.println("Müşteri: " + customer.getName() + " | Adres: " + customer.getAddress());
+        System.out.println("Müsteri: " + customer.getName() + " | Adres: " + customer.getAddress());
         System.out.println("Tarih: " + createdAt);
         System.out.println("Ürünler:");
         for (MenuItem item : items) System.out.println("- " + item);

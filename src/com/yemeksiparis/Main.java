@@ -30,7 +30,7 @@ public class Main {
             System.out.println();
             r.printMenu();
             System.out.println("0) Siparişi tamamla");
-            System.out.print("Sepete eklemek istediğin ürün numarası: ");
+            System.out.print("Sepete eklemek istediğiniz ürün numarası: ");
 
             int choice;
             try {

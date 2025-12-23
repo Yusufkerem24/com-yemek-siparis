@@ -8,6 +8,6 @@ public class CreditCardPayment implements Payment {
 
     @Override
     public String methodName() {
-        return "Credit Card";
+        return "Credit card";
     }
 }

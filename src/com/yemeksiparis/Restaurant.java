@@ -32,7 +32,7 @@ public class Restaurant {
     }
 
     public void printMenu() {
-        System.out.println("=== " + name + " Menü ===");
+        System.out.println("=== " + name + " Menu ===");
         for (int i = 0; i < menu.size(); i++) {
             System.out.println((i + 1) + ") " + menu.get(i));
         }

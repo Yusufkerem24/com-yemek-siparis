@@ -4,28 +4,88 @@ import java.util.Scanner;
 
 public class Main {
     public static void main(String[] args) {
-        Scanner sc = new Scanner(System.in);
 
-        // 1) Restaurant + Menu (Menü görüntüleme)
+        Scanner sc = new Scanner(System.in);
+        UserService userService = new UserService();
+
+        System.out.println("=== Online Yemek Sipariş Sistemi ===");
+        System.out.println("1) Giriş Yap");
+        System.out.println("2) Kayıt Ol");
+        System.out.print("Seçim: ");
+
+        int authChoice;
+        try {
+            authChoice = Integer.parseInt(sc.nextLine());
+        } catch (Exception e) {
+            System.out.println("Hatalı giriş!");
+            sc.close();
+            return;
+        }
+
+        System.out.print("Kullanıcı adı: ");
+        String username = sc.nextLine();
+
+        System.out.print("Şifre: ");
+        String password = sc.nextLine();
+
+        String name, phone, address;
+
+        if (authChoice == 1) {
+            // LOGIN
+            boolean success = userService.login(username, password);
+            if (!success) {
+                System.out.println("❌ Giriş başarısız!");
+                sc.close();
+                return;
+            }
+            System.out.println("✅ Giriş başarılı!");
+
+            // Basit demo için kullanıcı bilgilerini tekrar alıyoruz
+            System.out.print("Ad Soyad: ");
+            name = sc.nextLine();
+            System.out.print("Telefon: ");
+            phone = sc.nextLine();
+            System.out.print("Adres: ");
+            address = sc.nextLine();
+
+        } else if (authChoice == 2) {
+            // REGISTER
+            System.out.print("Ad Soyad: ");
+            name = sc.nextLine();
+            System.out.print("Telefon: ");
+            phone = sc.nextLine();
+            System.out.print("Adres: ");
+            address = sc.nextLine();
+
+            User newUser = new User(username, password, name, phone, address);
+            boolean registered = userService.register(newUser);
+
+            if (!registered) {
+                System.out.println("❌ Kullanıcı zaten mevcut!");
+                sc.close();
+                return;
+            }
+            System.out.println("✅ Kayıt başarılı!");
+
+        } else {
+            System.out.println("Hatalı seçim!");
+            sc.close();
+            return;
+        }
+
+        // ----------------------------
+        // BURADAN SONRASI SENİN KODUN
+        // ----------------------------
+
+        Customer customer = new Customer(name, phone, address, username, password);
+
+        // 1) Restaurant + Menu
         Restaurant r = new Restaurant("Burger House");
         r.addMenuItem(new MenuItem("Burger", 90));
         r.addMenuItem(new MenuItem("Patates", 35));
         r.addMenuItem(new MenuItem("Kola", 25));
 
-        // 2) Customer bilgilerini ekrandan al
-        System.out.println("=== Online Yemek Sipariş Sistemi ===");
-        System.out.print("Ad Soyad: ");
-        String name = sc.nextLine();
-
-        System.out.print("Telefon: ");
-        String phone = sc.nextLine();
-
-        System.out.print("Adres: ");
-        String address = sc.nextLine();
-
-        Customer customer = new Customer(name, phone, address);
-
-        // 3) Menüden ürün seçip sepete ekleme
+        // 2) Menüden ürün seçimi
         while (true) {
             System.out.println();
             r.printMenu();
@@ -36,14 +96,14 @@ public class Main {
             try {
                 choice = Integer.parseInt(sc.nextLine().trim());
             } catch (Exception e) {
-                System.out.println("Hatalı giriş! Lütfen sayı gir.");
+                System.out.println("Hatalı giriş!");
                 continue;
             }
 
             if (choice == 0) break;
 
             if (choice < 1 || choice > r.getMenu().size()) {
-                System.out.println("Hatalı seçim! Tekrar dene.");
+                System.out.println("Hatalı seçim!");
                 continue;
             }
 
@@ -52,69 +112,44 @@ public class Main {
             System.out.println(selected.getName() + " sepete eklendi.");
         }
 
-        // Sepet boşsa çık
         if (customer.getCart().isEmpty()) {
-            System.out.println("\nSepet boş. Sipariş oluşturulmadı.");
+            System.out.println("Sepet boş.");
             sc.close();
             return;
         }
 
-        // 4) Sipariş özeti
-        System.out.println();
         customer.getCart().printSummary();
 
-        // 5) Sipariş oluşturma
         Order order = new Order(customer, r, customer.getCart().getItems());
 
-        // 6) Kupon/İndirim sistemi
-        System.out.print("\nKupon kodu var mı? (yoksa ENTER): ");
+        System.out.print("Kupon kodu (yoksa ENTER): ");
         String couponCode = sc.nextLine().trim();
 
         double totalToPay = order.calculateTotal();
 
-        if (!couponCode.isEmpty()) {
-            if (couponCode.equalsIgnoreCase("INDIRIM10")) {
-                Coupon coupon = new Coupon("INDIRIM10", 0.10);
-                totalToPay = coupon.applyDiscount(totalToPay);
-                System.out.println("Kupon uygulandı! Yeni toplam: " + totalToPay + " TL");
-            } else {
-                System.out.println("Kupon geçersiz. İndirim uygulanmadı.");
-            }
+        if (couponCode.equalsIgnoreCase("INDIRIM10")) {
+            Coupon coupon = new Coupon("INDIRIM10", 0.10);
+            totalToPay = coupon.applyDiscount(totalToPay);
+            System.out.println("İndirim uygulandı!");
         }
 
-        // 7) Ödeme yöntemi (Polymorphism)
-        System.out.println("\nÖdeme yöntemi seç:");
+        System.out.println("Ödeme yöntemi:");
         System.out.println("1) Kredi Kartı");
         System.out.println("2) Nakit");
-        System.out.print("Seçim: ");
+        int payChoice = Integer.parseInt(sc.nextLine());
 
-        int payChoice;
-        try {
-            payChoice = Integer.parseInt(sc.nextLine().trim());
-        } catch (Exception e) {
-            payChoice = 1; // default
-        }
+        Payment payment = (payChoice == 2)
+                ? new CashPayment()
+                : new CreditCardPayment();
 
-        Payment payment = (payChoice == 2) ? new CashPayment() : new CreditCardPayment();
-
-        // 8) Siparişi sisteme “geçir” ve göster
-        System.out.println("\n=== Sipariş Detayı ===");
         order.placeOrder();
-
-        System.out.println("Ödeme yöntemi: " + payment.methodName());
         payment.pay(totalToPay);
 
-        // 9) Restoran puanlama
-        System.out.print("\nRestoranı puanla (1-5): ");
-        int rating;
-        try {
-            rating = Integer.parseInt(sc.nextLine().trim());
-        } catch (Exception e) {
-            rating = 5;
-        }
-
+        System.out.print("Restoran puanı (1-5): ");
+        int rating = Integer.parseInt(sc.nextLine());
         r.addRating(rating);
-        System.out.println("Teşekkürler! Güncel restoran ortalaması: " + r.getAverageRating());
+
+        System.out.println("Teşekkürler! Ortalama: " + r.getAverageRating());
 
         sc.close();
     }
